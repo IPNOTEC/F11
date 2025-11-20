@@ -626,7 +626,7 @@
             margin-bottom: 20px;
             backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
-            height: 300px; /* Fixed height for charts */
+            height: 300px;
             display: flex;
             flex-direction: column;
         }
@@ -941,7 +941,6 @@
         
         <div class="tabs">
             <div class="tab active" data-tab="model">F11 Strategy</div>
-            <div class="tab" data-tab="calculator">Valuation Calculator</div>
             <div class="tab" data-tab="journey">Investment Journey</div>
             <div class="tab" data-tab="benefits">Member Benefits</div>
             <div class="tab" data-tab="scout">SCOUT - USP</div>
@@ -1026,102 +1025,6 @@
                             <div class="metric-label">Withdrawal Period</div>
                             <div class="metric-value">12 Months</div>
                             <div class="metric-label">Lock-in from investment</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="tab-content" id="calculator-tab">
-            <div class="dashboard-content">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-calculator"></i> F11 Valuation Calculator</h2>
-                    
-                    <div class="input-group">
-                        <label for="companyValuation">CLUBICLES Company Valuation (₹)</label>
-                        <input type="number" id="companyValuation" min="1000000" value="10000000">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="totalMembers">Total Number of F11 Members</label>
-                        <input type="number" id="totalMembers" min="1" value="100">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="investmentPeriod">Investment Period (Years)</label>
-                        <input type="number" id="investmentPeriod" min="1" max="10" value="3">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="growthRate">Expected Annual Growth Rate (%)</label>
-                        <input type="number" id="growthRate" min="0" max="100" value="25">
-                    </div>
-                    
-                    <button class="btn" id="calculateBtn">Calculate Returns</button>
-                </div>
-                
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-chart-line"></i> Investment Returns Analysis</h2>
-                    
-                    <div class="metrics-grid">
-                        <div class="metric">
-                            <div class="metric-label">Your Investment</div>
-                            <div class="metric-value">₹111,111</div>
-                            <div class="metric-label">Total Amount</div>
-                        </div>
-                        
-                        <div class="metric">
-                            <div class="metric-label">Trust Ownership</div>
-                            <div class="metric-value" id="trustOwnershipValue">₹0</div>
-                            <div class="metric-label">11% of valuation</div>
-                        </div>
-                        
-                        <div class="metric metric-highlight">
-                            <div class="metric-label">Your Share Value</div>
-                            <div class="metric-value" id="yourShareValue">₹0</div>
-                            <div class="metric-label">Current value</div>
-                        </div>
-                        
-                        <div class="metric">
-                            <div class="metric-label">Future Value</div>
-                            <div class="metric-value" id="futureValue">₹0</div>
-                            <div class="metric-label">After investment period</div>
-                        </div>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">Investment Growth Projection</div>
-                        <div class="chart-wrapper">
-                            <canvas id="growthChart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="results">
-                        <h3>Detailed Calculations</h3>
-                        
-                        <div class="result-item">
-                            <span>Your Individual Ownership:</span>
-                            <span id="individualOwnershipDetail">0.11%</span>
-                        </div>
-                        
-                        <div class="result-item">
-                            <span>Current Value of Your Share:</span>
-                            <span id="currentValueDetail">₹0</span>
-                        </div>
-                        
-                        <div class="result-item">
-                            <span>Projected Future Valuation:</span>
-                            <span id="futureValuationDetail">₹0</span>
-                        </div>
-                        
-                        <div class="result-item">
-                            <span>Projected Future Share Value:</span>
-                            <span id="futureShareValueDetail">₹0</span>
-                        </div>
-                        
-                        <div class="result-item highlight">
-                            <span>Potential Return on Investment:</span>
-                            <span class="value-highlight" id="roiValue">0%</span>
                         </div>
                     </div>
                 </div>
@@ -1478,58 +1381,17 @@
                 });
             });
             
-            // Calculator functionality
-            const calculateBtn = document.getElementById('calculateBtn');
-            calculateBtn.addEventListener('click', calculateReturns);
-            
             // Update individual share when member count changes
             const totalMembersInput = document.getElementById('totalMembers');
             totalMembersInput.addEventListener('input', updateIndividualShare);
             
             // Calculate initial values on page load
             updateIndividualShare();
-            calculateReturns();
             
             function updateIndividualShare() {
                 const totalMembers = parseInt(totalMembersInput.value) || 1;
                 const individualShare = 11 / totalMembers;
                 document.getElementById('individualShare').textContent = individualShare.toFixed(2) + '%';
-            }
-            
-            function calculateReturns() {
-                // Get input values
-                const companyValuation = parseInt(document.getElementById('companyValuation').value);
-                const totalMembers = parseInt(document.getElementById('totalMembers').value);
-                const investmentPeriod = parseInt(document.getElementById('investmentPeriod').value);
-                const growthRate = parseInt(document.getElementById('growthRate').value);
-                
-                // Calculations
-                const trustOwnershipValue = companyValuation * 0.11;
-                const individualShare = 11 / totalMembers;
-                const yourShareValue = trustOwnershipValue * (individualShare / 100);
-                
-                // Future valuation calculation
-                const futureValuation = companyValuation * Math.pow(1 + (growthRate / 100), investmentPeriod);
-                const futureTrustValue = futureValuation * 0.11;
-                const futureShareValue = futureTrustValue * (individualShare / 100);
-                
-                // ROI calculation
-                const investmentAmount = 111111;
-                const roi = ((futureShareValue - investmentAmount) / investmentAmount) * 100;
-                
-                // Update display values
-                document.getElementById('trustOwnershipValue').textContent = '₹' + Math.round(trustOwnershipValue).toLocaleString();
-                document.getElementById('yourShareValue').textContent = '₹' + Math.round(yourShareValue).toLocaleString();
-                document.getElementById('futureValue').textContent = '₹' + Math.round(futureShareValue).toLocaleString();
-                
-                document.getElementById('individualOwnershipDetail').textContent = individualShare.toFixed(2) + '%';
-                document.getElementById('currentValueDetail').textContent = '₹' + Math.round(yourShareValue).toLocaleString();
-                document.getElementById('futureValuationDetail').textContent = '₹' + Math.round(futureValuation).toLocaleString();
-                document.getElementById('futureShareValueDetail').textContent = '₹' + Math.round(futureShareValue).toLocaleString();
-                document.getElementById('roiValue').textContent = roi.toFixed(1) + '%';
-                
-                // Update growth chart
-                updateGrowthChart(companyValuation, futureValuation, investmentPeriod);
             }
         });
         
@@ -1622,96 +1484,6 @@
                     plugins: {
                         legend: {
                             display: false
-                        }
-                    }
-                }
-            });
-            
-            // Initial Growth Chart
-            updateGrowthChart(10000000, 19531250, 3);
-        }
-        
-        function updateGrowthChart(currentValuation, futureValuation, years) {
-            const growthCtx = document.getElementById('growthChart').getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (window.growthChartInstance) {
-                window.growthChartInstance.destroy();
-            }
-            
-            // Generate data points for each year
-            const labels = [];
-            const data = [];
-            
-            for (let i = 0; i <= years; i++) {
-                labels.push(`Year ${i}`);
-                const value = currentValuation * Math.pow(futureValuation / currentValuation, i / years);
-                data.push(value);
-            }
-            
-            window.growthChartInstance = new Chart(growthCtx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Company Valuation',
-                        data: data,
-                        backgroundColor: 'rgba(255, 140, 0, 0.2)',
-                        borderColor: 'rgba(255, 140, 0, 1)',
-                        pointBackgroundColor: 'rgba(255, 140, 0, 1)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(255, 140, 0, 1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            ticks: {
-                                color: 'white',
-                                callback: function(value) {
-                                    if (value >= 10000000) {
-                                        return '₹' + (value / 10000000).toFixed(1) + ' Cr';
-                                    }
-                                    return '₹' + value.toLocaleString();
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: 'white'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: 'white'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += '₹' + context.parsed.y.toLocaleString();
-                                    }
-                                    return label;
-                                }
-                            }
                         }
                     }
                 }
