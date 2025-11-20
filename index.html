@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUBICLES F11 Strategy Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --futuristic-blue: #00c8ff;
+            --futuristic-purple: #8a2be2;
+            --f11-gold: #FFD700;
+            --f11-orange: #FF8C00;
+            --scout-red: #FF0000;
+            --scout-black: #1a1a1a;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--f11-orange), var(--f11-gold));
+            color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .f11-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--f11-orange), var(--f11-gold));
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--f11-orange);
+            font-weight: 600;
+            color: var(--f11-orange);
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: var(--glass-bg);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--f11-orange);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+        }
+        
+        .scout-title {
+            color: var(--scout-red);
+            border-bottom-color: var(--scout-red);
+        }
+        
+        .card-title i {
+            margin-right: 10px;
+            font-size: 1.6rem;
+        }
+        
+        .info-box {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .danger-box {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid var(--danger);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .warning-box {
+            background: rgba(243, 156, 18, 0.2);
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .success-box {
+            background: rgba(46, 204, 113, 0.2);
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .f11-box {
+            background: rgba(255, 140, 0, 0.2);
+            border-left: 4px solid var(--f11-orange);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .scout-box {
+            background: rgba(255, 0, 0, 0.2);
+            border-left: 4px solid var(--scout-red);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .business-points {
+            list-style-type: none;
+        }
+        
+        .business-points li {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .business-points li:before {
+            content: "•";
+            color: var(--f11-orange);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .scout-points li:before {
+            color: var(--scout-red);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric:hover {
+            transform: scale(1.05);
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--f11-orange);
+            margin: 10px 0;
+        }
+        
+        .scout-metric .metric-value {
+            color: var(--scout-red);
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .metric-highlight {
+            background: linear-gradient(135deg, var(--f11-orange), var(--f11-gold));
+            color: #333;
+        }
+        
+        .scout-highlight {
+            background: linear-gradient(135deg, var(--scout-red), var(--scout-black));
+            color: white;
+        }
+        
+        .metric-highlight .metric-value {
+            color: #333;
+        }
+        
+        .scout-highlight .metric-value {
+            color: white;
+        }
+        
+        .metric-highlight .metric-label {
+            color: rgba(51,51,51,0.9);
+        }
+        
+        .scout-highlight .metric-label {
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .comparison-table th {
+            background-color: rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+        }
+        
+        .comparison-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .recommendation-badge {
+            background: var(--f11-orange);
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .scout-badge {
+            background: var(--scout-red);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--f11-orange);
+            box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.2);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--f11-orange), var(--f11-gold));
+            color: #333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .scout-btn {
+            background: linear-gradient(135deg, var(--scout-red), var(--scout-black));
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        .results {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--glass-border);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .highlight {
+            font-weight: 700;
+            color: var(--f11-orange);
+            font-size: 1.1rem;
+        }
+        
+        .scout-highlight {
+            color: var(--scout-red);
+        }
+        
+        .value-highlight {
+            font-weight: 700;
+            color: var(--f11-gold);
+            font-size: 1.2rem;
+        }
+        
+        .scout-value-highlight {
+            color: var(--scout-red);
+        }
+        
+        .warning {
+            color: var(--warning);
+            font-weight: 500;
+        }
+        
+        .error {
+            color: var(--danger);
+            font-weight: 500;
+        }
+        
+        .step-container {
+            counter-reset: step-counter;
+            margin-top: 20px;
+        }
+        
+        .step-item {
+            display: flex;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--f11-orange);
+            color: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .scout-step .step-number {
+            background: var(--scout-red);
+            color: white;
+        }
+        
+        .step-content {
+            flex: 1;
+            padding-bottom: 15px;
+            border-left: 2px solid var(--f11-orange);
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .scout-step .step-content {
+            border-left-color: var(--scout-red);
+        }
+        
+        .step-item:last-child .step-content {
+            border-left: none;
+        }
+        
+        .step-content::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--f11-orange);
+        }
+        
+        .scout-step .step-content::before {
+            background: var(--scout-red);
+        }
+        
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--f11-orange);
+        }
+        
+        .scout-step .step-title {
+            color: var(--scout-red);
+        }
+        
+        .journey-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .journey-step {
+            background: var(--glass-bg);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .journey-step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--f11-orange), var(--f11-gold));
+        }
+        
+        .journey-step.completed {
+            background: rgba(46, 204, 113, 0.1);
+        }
+        
+        .journey-step.active {
+            background: rgba(255, 140, 0, 0.2);
+            border-color: var(--f11-orange);
+        }
+        
+        .journey-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .journey-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--f11-orange);
+        }
+        
+        .journey-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: rgba(243, 156, 18, 0.3);
+            color: var(--warning);
+        }
+        
+        .status-active {
+            background: rgba(255, 140, 0, 0.3);
+            color: var(--f11-orange);
+        }
+        
+        .status-completed {
+            background: rgba(46, 204, 113, 0.3);
+            color: var(--success);
+        }
+        
+        .journey-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .journey-btn {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .journey-btn.primary {
+            background: linear-gradient(135deg, var(--f11-orange), var(--f11-gold));
+            color: #333;
+        }
+        
+        .journey-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .journey-btn.scout {
+            background: linear-gradient(135deg, var(--scout-red), var(--scout-black));
+            color: white;
+        }
+        
+        .journey-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .chart-container {
+            background: var(--glass-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            height: 300px; /* Fixed height for charts */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--f11-orange);
+            text-align: center;
+        }
+        
+        .scout-chart-title {
+            color: var(--scout-red);
+        }
+        
+        .chart-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        
+        .chart-wrapper canvas {
+            max-height: 220px;
+        }
+        
+        .stage-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stage {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .stage-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--f11-orange);
+            margin-bottom: 10px;
+        }
+        
+        .stage-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--f11-gold);
+            margin: 10px 0;
+        }
+        
+        .stage-total {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--f11-gold);
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .scout-kit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .kit-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+        
+        .kit-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            border-color: var(--scout-red);
+        }
+        
+        .kit-icon {
+            font-size: 2.5rem;
+            color: var(--scout-red);
+            margin-bottom: 15px;
+        }
+        
+        .kit-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--scout-red);
+        }
+        
+        .scout-dashboard {
+            background: linear-gradient(135deg, #1a1a1a, #333333);
+            border: 2px solid var(--scout-red);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scout-dashboard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--scout-red);
+        }
+        
+        .scout-dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .scout-dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--scout-red);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .scout-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .scout-stat {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .scout-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--scout-red);
+            margin-bottom: 5px;
+        }
+        
+        .scout-stat-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .scout-map {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scout-map::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 49%, rgba(255,0,0,0.1) 50%, transparent 51%);
+            background-size: 10px 10px;
+        }
+        
+        .map-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--scout-red);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            animation: pulse 2s infinite;
+        }
+        
+        .map-pin::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+        
+        .revolution-tape {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--scout-red);
+            color: white;
+            padding: 8px 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 1000;
+            overflow: hidden;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+        
+        .tape-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scrollTape 20s linear infinite;
+        }
+        
+        @keyframes scrollTape {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .scout-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stage-breakdown {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-table {
+                font-size: 0.9rem;
+            }
+            
+            .comparison-table th, .comparison-table td {
+                padding: 8px 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .scout-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            
+            .tab.active {
+                border-bottom: 3px solid var(--f11-orange);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>CLUBICLES F11 Strategy Dashboard</h1>
+            <div class="f11-badge">FUTURE 11</div>
+            <p class="subtitle">CoWorking Space Aggregator Platform - Complete F11 Investment Journey</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="model">F11 Strategy</div>
+            <div class="tab" data-tab="calculator">Valuation Calculator</div>
+            <div class="tab" data-tab="journey">Investment Journey</div>
+            <div class="tab" data-tab="benefits">Member Benefits</div>
+            <div class="tab" data-tab="scout">SCOUT - USP</div>
+        </div>
+        
+        <div class="tab-content active" id="model-tab">
+            <div class="dashboard-content">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-lightbulb"></i> F11 Strategy Overview</h2>
+                    
+                    <div class="f11-box">
+                        <p><strong>F11 (Future 11)</strong> is CLUBICLES' revolutionary Go-To-Market strategy that creates a Trust-owned collective of 11% of CLUBICLES valuation.</p>
+                    </div>
+                    
+                    <div class="stage-breakdown">
+                        <div class="stage">
+                            <div class="stage-number">Stage 1</div>
+                            <div class="stage-title">JOIN THE CLUB</div>
+                            <div class="stage-amount">₹1,001</div>
+                            <div class="stage-desc">One-time fee for CLAN networking access</div>
+                        </div>
+                        
+                        <div class="stage">
+                            <div class="stage-number">Stage 2</div>
+                            <div class="stage-title">LOI CONFIRMATION</div>
+                            <div class="stage-amount">₹11,110</div>
+                            <div class="stage-desc">Non-refundable sign-off with daily updates</div>
+                        </div>
+                        
+                        <div class="stage">
+                            <div class="stage-number">Stage 3</div>
+                            <div class="stage-title">FINAL INVESTMENT</div>
+                            <div class="stage-amount">₹99,000</div>
+                            <div class="stage-desc">Complete membership with legal documents</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stage-total">Total Investment: ₹111,111</div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">F11 Ownership Structure</div>
+                        <div class="chart-wrapper">
+                            <canvas id="f11StructureChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <ul class="business-points">
+                        <li><strong>Trust Ownership:</strong> 11% of CLUBICLES owned by the F11 Trust</li>
+                        <li><strong>Membership Lock-in:</strong> No withdrawals allowed for 1 year from investment date</li>
+                        <li><strong>CLAN Networking:</strong> Exclusive community access from Stage 1</li>
+                        <li><strong>Transparent Process:</strong> Daily updates and MOM during Stage 2</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-handshake"></i> Trust Structure</h2>
+                    
+                    <div class="info-box">
+                        <p>The F11 Trust will be established as a legal entity that collectively holds 11% of CLUBICLES equity on behalf of all F11 members.</p>
+                    </div>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-label">Trust Ownership</div>
+                            <div class="metric-value">11%</div>
+                            <div class="metric-label">of CLUBICLES</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">Individual Share</div>
+                            <div class="metric-value" id="individualShare">0.11%</div>
+                            <div class="metric-label">per member (100 members)</div>
+                        </div>
+                        
+                        <div class="metric metric-highlight">
+                            <div class="metric-label">Total Investment</div>
+                            <div class="metric-value">₹111,111</div>
+                            <div class="metric-label">per member</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">Withdrawal Period</div>
+                            <div class="metric-value">12 Months</div>
+                            <div class="metric-label">Lock-in from investment</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="calculator-tab">
+            <div class="dashboard-content">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-calculator"></i> F11 Valuation Calculator</h2>
+                    
+                    <div class="input-group">
+                        <label for="companyValuation">CLUBICLES Company Valuation (₹)</label>
+                        <input type="number" id="companyValuation" min="1000000" value="10000000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="totalMembers">Total Number of F11 Members</label>
+                        <input type="number" id="totalMembers" min="1" value="100">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="investmentPeriod">Investment Period (Years)</label>
+                        <input type="number" id="investmentPeriod" min="1" max="10" value="3">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="growthRate">Expected Annual Growth Rate (%)</label>
+                        <input type="number" id="growthRate" min="0" max="100" value="25">
+                    </div>
+                    
+                    <button class="btn" id="calculateBtn">Calculate Returns</button>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-chart-line"></i> Investment Returns Analysis</h2>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-label">Your Investment</div>
+                            <div class="metric-value">₹111,111</div>
+                            <div class="metric-label">Total Amount</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">Trust Ownership</div>
+                            <div class="metric-value" id="trustOwnershipValue">₹0</div>
+                            <div class="metric-label">11% of valuation</div>
+                        </div>
+                        
+                        <div class="metric metric-highlight">
+                            <div class="metric-label">Your Share Value</div>
+                            <div class="metric-value" id="yourShareValue">₹0</div>
+                            <div class="metric-label">Current value</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">Future Value</div>
+                            <div class="metric-value" id="futureValue">₹0</div>
+                            <div class="metric-label">After investment period</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Investment Growth Projection</div>
+                        <div class="chart-wrapper">
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="results">
+                        <h3>Detailed Calculations</h3>
+                        
+                        <div class="result-item">
+                            <span>Your Individual Ownership:</span>
+                            <span id="individualOwnershipDetail">0.11%</span>
+                        </div>
+                        
+                        <div class="result-item">
+                            <span>Current Value of Your Share:</span>
+                            <span id="currentValueDetail">₹0</span>
+                        </div>
+                        
+                        <div class="result-item">
+                            <span>Projected Future Valuation:</span>
+                            <span id="futureValuationDetail">₹0</span>
+                        </div>
+                        
+                        <div class="result-item">
+                            <span>Projected Future Share Value:</span>
+                            <span id="futureShareValueDetail">₹0</span>
+                        </div>
+                        
+                        <div class="result-item highlight">
+                            <span>Potential Return on Investment:</span>
+                            <span class="value-highlight" id="roiValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="journey-tab">
+            <div class="dashboard-content">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-road"></i> F11 Investment Journey</h2>
+                    <p>Experience the complete three-stage journey of joining the F11 Trust and becoming a CLUBICLES co-owner.</p>
+                    
+                    <div class="journey-container">
+                        <div class="journey-step active" id="step1">
+                            <div class="journey-header">
+                                <div class="journey-title">Stage 1: JOIN THE CLUB - ₹1,001</div>
+                                <div class="journey-status status-active">Active</div>
+                            </div>
+                            <div class="journey-content">
+                                <p>Pay ₹1,001 to join the exclusive CLAN networking community - mandatory first step for all F11 members.</p>
+                                <div class="info-box">
+                                    <p>This membership provides immediate access to our exclusive investor network, community events, and CLAN-based networking opportunities.</p>
+                                </div>
+                            </div>
+                            <div class="journey-actions">
+                                <button class="journey-btn primary" onclick="completeStep(1)">Join CLAN Now</button>
+                            </div>
+                        </div>
+                        
+                        <div class="journey-step" id="step2">
+                            <div class="journey-header">
+                                <div class="journey-title">Stage 2: LOI Confirmation - ₹11,110</div>
+                                <div class="journey-status status-pending">Pending</div>
+                            </div>
+                            <div class="journey-content">
+                                <p>After the F11 Trust formation, confirm your commitment by paying ₹11,110 and signing the Letter of Intent (LOI).</p>
+                                <div class="warning-box">
+                                    <p>This amount is non-refundable and confirms your serious intent to join the F11 Trust.</p>
+                                </div>
+                                <div class="input-group">
+                                    <label for="fullName">Full Name</label>
+                                    <input type="text" id="fullName" placeholder="Enter your full name">
+                                </div>
+                                <div class="input-group">
+                                    <label for="panNumber">PAN Number</label>
+                                    <input type="text" id="panNumber" placeholder="Enter your PAN number">
+                                </div>
+                                <div class="input-group">
+                                    <label for="aadhaarNumber">Aadhaar Number</label>
+                                    <input type="text" id="aadhaarNumber" placeholder="Enter your Aadhaar number">
+                                </div>
+                            </div>
+                            <div class="journey-actions">
+                                <button class="journey-btn secondary" onclick="completeStep(2)">Submit LOI & Payment</button>
+                            </div>
+                        </div>
+                        
+                        <div class="journey-step" id="step3">
+                            <div class="journey-header">
+                                <div class="journey-title">Stage 3: Final Investment - ₹99,000</div>
+                                <div class="journey-status status-pending">Pending</div>
+                            </div>
+                            <div class="journey-content">
+                                <p>Complete your F11 membership by transferring the remaining ₹99,000 on your chosen investment date.</p>
+                                <div class="info-box">
+                                    <p>You will receive your official F11 Membership Card, legal documents, and full access to all Trust benefits.</p>
+                                </div>
+                                <div class="input-group">
+                                    <label for="investmentDate">Preferred Investment Date</label>
+                                    <input type="date" id="investmentDate">
+                                </div>
+                                <div class="warning-box">
+                                    <p>Remember: Once invested, your funds will be locked in for 12 months from the investment date.</p>
+                                </div>
+                            </div>
+                            <div class="journey-actions">
+                                <button class="journey-btn secondary" onclick="completeStep(3)">Schedule Investment</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-tachometer-alt"></i> F11 CLUB Dashboard</h2>
+                    <p>After completing Stage 1, you'll gain access to the exclusive F11 CLUB Dashboard with real-time updates.</p>
+                    
+                    <div class="info-box">
+                        <p><strong>Dashboard Features:</strong></p>
+                        <ul class="business-points">
+                            <li>Real-time Trust formation progress</li>
+                            <li>Daily meeting minutes and updates</li>
+                            <li>Exclusive CLAN networking events</li>
+                            <li>Member-only coworking space deals</li>
+                            <li>Investment documents and legal updates</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="journey-actions">
+                        <button class="journey-btn primary" onclick="window.open('https://clubicles-club.vercel.app/', '_blank')">Visit F11 Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="benefits-tab">
+            <div class="dashboard-content">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-star"></i> F11 Member Benefits</h2>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Benefits Timeline</div>
+                        <div class="chart-wrapper">
+                            <canvas id="benefitsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="step-container">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Immediate Access (Stage 1)</div>
+                                <p>Join the exclusive CLAN networking community with access to premium events, networking opportunities, and early insights into CLUBICLES developments.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Trust Formation Updates (Stage 2)</div>
+                                <p>Receive daily updates on the F11 Trust formation process, including meeting minutes, legal documentation progress, and exclusive insights.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Co-Ownership Status (Stage 3)</div>
+                                <p>Become an official co-owner of CLUBICLES through the F11 Trust with 11% collective ownership, membership card, and all legal rights.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <div class="step-title">Financial Returns</div>
+                                <p>Participate in the growth of CLUBICLES with potential financial returns through the appreciation of your ownership share in the company.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-lock"></i> Withdrawal Policy</h2>
+                    
+                    <div class="warning-box">
+                        <p><strong>Important:</strong> F11 investments have a mandatory 12-month lock-in period from the date of your final investment (Stage 3).</p>
+                    </div>
+                    
+                    <ul class="business-points">
+                        <li><strong>No withdrawals</strong> allowed during the first 12 months after Stage 3 completion</li>
+                        <li><strong>Full withdrawal</strong> of your ₹111,111 investment is possible after the 12-month period</li>
+                        <li><strong>Ownership benefits</strong> continue until withdrawal is processed</li>
+                        <li><strong>Withdrawal requests</strong> will be processed within 30 days of submission</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <p>The 12-month lock-in period ensures stability for the F11 Trust and allows CLUBICLES to execute its growth strategy effectively.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="scout-tab">
+            <div class="dashboard-content">
+                <div class="card">
+                    <h2 class="card-title scout-title"><i class="fas fa-motorcycle"></i> SCOUT TEAM - Unique Selling Proposition</h2>
+                    
+                    <div class="scout-box">
+                        <p><strong>SCOUT TEAM</strong> is our elite biker network that explores potential coworking spaces across the country, identifying opportunities and collecting vital business intelligence.</p>
+                    </div>
+                    
+                    <div class="scout-dashboard">
+                        <div class="scout-dashboard-header">
+                            <div class="scout-dashboard-title">SCOUT DASHBOARD</div>
+                            <div class="scout-badge">ACTIVE SCOUT</div>
+                        </div>
+                        
+                        <div class="scout-stats">
+                            <div class="scout-stat">
+                                <div class="scout-stat-value">47</div>
+                                <div class="scout-stat-label">Locations Scouted</div>
+                            </div>
+                            <div class="scout-stat">
+                                <div class="scout-stat-value">23</div>
+                                <div class="scout-stat-label">SPOCs Identified</div>
+                            </div>
+                            <div class="scout-stat">
+                                <div class="scout-stat-value">15</div>
+                                <div class="scout-stat-label">Deals in Progress</div>
+                            </div>
+                            <div class="scout-stat">
+                                <div class="scout-stat-value">₹2.3L</div>
+                                <div class="scout-stat-label">Scouting Rewards</div>
+                            </div>
+                        </div>
+                        
+                        <div class="scout-map">
+                            <div class="map-pin" style="top: 30%; left: 25%;"></div>
+                            <div class="map-pin" style="top: 60%; left: 45%;"></div>
+                            <div class="map-pin" style="top: 40%; left: 65%;"></div>
+                            <div class="map-pin" style="top: 70%; left: 75%;"></div>
+                            <div class="map-text">LIVE SCOUTING ACTIVITY MAP</div>
+                        </div>
+                        
+                        <div class="journey-actions">
+                            <button class="journey-btn scout">Launch Scout App</button>
+                            <button class="journey-btn secondary">View Scout Missions</button>
+                        </div>
+                    </div>
+                    
+                    <div class="step-container">
+                        <div class="step-item scout-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Ride & Explore</div>
+                                <p>SCOUT members ride to various locations across their region, identifying potential coworking spaces and business districts with high potential.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item scout-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Drop Digital Pins</div>
+                                <p>Using the SCOUT app, members drop digital pins at locations with coworking potential, tagging them with relevant information and photos.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item scout-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Collect SPOC Details</div>
+                                <p>Scouts identify and collect contact information for Single Point of Contacts (SPOCs) at potential locations, along with relevant business details.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item scout-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <div class="step-title">Earn Rewards</div>
+                                <p>For every successful lead that converts to a CLUBICLES partnership, scouts earn monetary rewards and exclusive benefits.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title scout-title"><i class="fas fa-gift"></i> SCOUT Welcome Kit</h2>
+                    <p>Every SCOUT team member receives an exclusive welcome kit designed for optimal exploration and data collection.</p>
+                    
+                    <div class="scout-kit-grid">
+                        <div class="kit-item">
+                            <div class="kit-icon"><i class="fas fa-motorcycle"></i></div>
+                            <div class="kit-title">Premium Bike Access</div>
+                            <p>Access to premium bikes for scouting missions with full maintenance support</p>
+                        </div>
+                        
+                        <div class="kit-item">
+                            <div class="kit-icon"><i class="fas fa-vest"></i></div>
+                            <div class="kit-title">Rider Gear Package</div>
+                            <p>High-quality riding jacket, helmet, gloves, and protective gear for safe exploration</p>
+                        </div>
+                        
+                        <div class="kit-item">
+                            <div class="kit-icon"><i class="fas fa-camera"></i></div>
+                            <div class="kit-title">Action Camera</div>
+                            <p>Waterproof action camera for documenting locations and creating content</p>
+                        </div>
+                        
+                        <div class="kit-item">
+                            <div class="kit-icon"><i class="fas fa-mobile-alt"></i></div>
+                            <div class="kit-title">Scout Mobile App</div>
+                            <p>Dedicated app for dropping digital pins, collecting data, and managing missions</p>
+                        </div>
+                        
+                        <div class="kit-item">
+                            <div class="kit-icon"><i class="fas fa-satellite-dish"></i></div>
+                            <div class="kit-title">GPS Navigation System</div>
+                            <p>Advanced GPS system with offline maps and route planning capabilities</p>
+                        </div>
+                        
+                        <div class="kit-item">
+                            <div class="kit-icon"><i class="fas fa-battery-full"></i></div>
+                            <div class="kit-title">Power Bank & Charging Kit</div>
+                            <p>High-capacity power bank and charging accessories for all devices</p>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric scout-metric">
+                            <div class="metric-label">Scout Missions</div>
+                            <div class="metric-value">50+</div>
+                            <div class="metric-label">Active nationwide</div>
+                        </div>
+                        
+                        <div class="metric scout-metric">
+                            <div class="metric-label">Avg. Reward</div>
+                            <div class="metric-value">₹5,000</div>
+                            <div class="metric-label">Per successful lead</div>
+                        </div>
+                        
+                        <div class="metric scout-highlight">
+                            <div class="metric-label">Total Scouts</div>
+                            <div class="metric-value">250+</div>
+                            <div class="metric-label">Active members</div>
+                        </div>
+                        
+                        <div class="metric scout-metric">
+                            <div class="metric-label">Conversion Rate</div>
+                            <div class="metric-value">18%</div>
+                            <div class="metric-label">Leads to partnerships</div>
+                        </div>
+                    </div>
+                    
+                    <div class="journey-actions">
+                        <button class="journey-btn scout">Join SCOUT Team</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="revolution-tape">
+        <div class="tape-content">START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION • START THE REVOLUTION •</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all charts
+            initializeCharts();
+            
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to current tab and content
+                    this.classList.add('active');
+                    document.getElementById(tabId + '-tab').classList.add('active');
+                });
+            });
+            
+            // Calculator functionality
+            const calculateBtn = document.getElementById('calculateBtn');
+            calculateBtn.addEventListener('click', calculateReturns);
+            
+            // Update individual share when member count changes
+            const totalMembersInput = document.getElementById('totalMembers');
+            totalMembersInput.addEventListener('input', updateIndividualShare);
+            
+            // Calculate initial values on page load
+            updateIndividualShare();
+            calculateReturns();
+            
+            function updateIndividualShare() {
+                const totalMembers = parseInt(totalMembersInput.value) || 1;
+                const individualShare = 11 / totalMembers;
+                document.getElementById('individualShare').textContent = individualShare.toFixed(2) + '%';
+            }
+            
+            function calculateReturns() {
+                // Get input values
+                const companyValuation = parseInt(document.getElementById('companyValuation').value);
+                const totalMembers = parseInt(document.getElementById('totalMembers').value);
+                const investmentPeriod = parseInt(document.getElementById('investmentPeriod').value);
+                const growthRate = parseInt(document.getElementById('growthRate').value);
+                
+                // Calculations
+                const trustOwnershipValue = companyValuation * 0.11;
+                const individualShare = 11 / totalMembers;
+                const yourShareValue = trustOwnershipValue * (individualShare / 100);
+                
+                // Future valuation calculation
+                const futureValuation = companyValuation * Math.pow(1 + (growthRate / 100), investmentPeriod);
+                const futureTrustValue = futureValuation * 0.11;
+                const futureShareValue = futureTrustValue * (individualShare / 100);
+                
+                // ROI calculation
+                const investmentAmount = 111111;
+                const roi = ((futureShareValue - investmentAmount) / investmentAmount) * 100;
+                
+                // Update display values
+                document.getElementById('trustOwnershipValue').textContent = '₹' + Math.round(trustOwnershipValue).toLocaleString();
+                document.getElementById('yourShareValue').textContent = '₹' + Math.round(yourShareValue).toLocaleString();
+                document.getElementById('futureValue').textContent = '₹' + Math.round(futureShareValue).toLocaleString();
+                
+                document.getElementById('individualOwnershipDetail').textContent = individualShare.toFixed(2) + '%';
+                document.getElementById('currentValueDetail').textContent = '₹' + Math.round(yourShareValue).toLocaleString();
+                document.getElementById('futureValuationDetail').textContent = '₹' + Math.round(futureValuation).toLocaleString();
+                document.getElementById('futureShareValueDetail').textContent = '₹' + Math.round(futureShareValue).toLocaleString();
+                document.getElementById('roiValue').textContent = roi.toFixed(1) + '%';
+                
+                // Update growth chart
+                updateGrowthChart(companyValuation, futureValuation, investmentPeriod);
+            }
+        });
+        
+        // Chart initialization
+        function initializeCharts() {
+            // F11 Structure Chart
+            const f11StructureCtx = document.getElementById('f11StructureChart').getContext('2d');
+            new Chart(f11StructureCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['F11 Trust (11%)', 'Company (89%)'],
+                    datasets: [{
+                        data: [11, 89],
+                        backgroundColor: [
+                            'rgba(255, 140, 0, 0.8)',
+                            'rgba(52, 152, 219, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 140, 0, 1)',
+                            'rgba(52, 152, 219, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'white',
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Benefits Chart
+            const benefitsCtx = document.getElementById('benefitsChart').getContext('2d');
+            new Chart(benefitsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Stage 1', 'Stage 2', 'Stage 3', 'Post-Investment'],
+                    datasets: [{
+                        label: 'Benefit Level',
+                        data: [40, 70, 100, 100],
+                        backgroundColor: [
+                            'rgba(255, 140, 0, 0.8)',
+                            'rgba(255, 140, 0, 0.8)',
+                            'rgba(255, 215, 0, 0.8)',
+                            'rgba(255, 215, 0, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 140, 0, 1)',
+                            'rgba(255, 140, 0, 1)',
+                            'rgba(255, 215, 0, 1)',
+                            'rgba(255, 215, 0, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: 'white',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Initial Growth Chart
+            updateGrowthChart(10000000, 19531250, 3);
+        }
+        
+        function updateGrowthChart(currentValuation, futureValuation, years) {
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.growthChartInstance) {
+                window.growthChartInstance.destroy();
+            }
+            
+            // Generate data points for each year
+            const labels = [];
+            const data = [];
+            
+            for (let i = 0; i <= years; i++) {
+                labels.push(`Year ${i}`);
+                const value = currentValuation * Math.pow(futureValuation / currentValuation, i / years);
+                data.push(value);
+            }
+            
+            window.growthChartInstance = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Company Valuation',
+                        data: data,
+                        backgroundColor: 'rgba(255, 140, 0, 0.2)',
+                        borderColor: 'rgba(255, 140, 0, 1)',
+                        pointBackgroundColor: 'rgba(255, 140, 0, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(255, 140, 0, 1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: 'white',
+                                callback: function(value) {
+                                    if (value >= 10000000) {
+                                        return '₹' + (value / 10000000).toFixed(1) + ' Cr';
+                                    }
+                                    return '₹' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += '₹' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // User Journey Functions
+        function completeStep(stepNumber) {
+            // Mark current step as completed
+            const currentStep = document.getElementById(`step${stepNumber}`);
+            currentStep.classList.remove('active');
+            currentStep.classList.add('completed');
+            
+            // Update status
+            const statusElement = currentStep.querySelector('.journey-status');
+            statusElement.textContent = 'Completed';
+            statusElement.className = 'journey-status status-completed';
+            
+            // If there's a next step, activate it
+            const nextStep = document.getElementById(`step${stepNumber + 1}`);
+            if (nextStep) {
+                nextStep.classList.add('active');
+                
+                // Update status of next step
+                const nextStatusElement = nextStep.querySelector('.journey-status');
+                nextStatusElement.textContent = 'Active';
+                nextStatusElement.className = 'journey-status status-active';
+            }
+            
+            // If this is the last step, show completion message
+            if (stepNumber === 3) {
+                setTimeout(() => {
+                    alert('Congratulations! You have successfully completed the F11 investment journey. Welcome to the revolution!');
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>
